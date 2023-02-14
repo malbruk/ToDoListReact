@@ -1,40 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import service from './service.js';
 
 function App() {
   const [newTodo, setNewTodo] = useState("");
   const [todos, setTodos] = useState([]);
 
   async function getTodos() {
-    const result = await fetch("https://localhost:7271/items");
-    const todos = await result.json();
+    const todos = await service.getTasks();
     setTodos(todos);
   }
 
   async function createTodo(e) {
     e.preventDefault();
-    await fetch('https://localhost:7271/items', {
-      method: "POST",
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name: newTodo })
-    });
-    setNewTodo("");
-    await getTodos();
+    await service.addTask(newTodo);
+    setNewTodo("");//clear input
+    await getTodos();//refresh tasks list (in order to see the new one)
   }
 
   async function updateCompleted(todo, isComplete) {
-    await fetch(`https://localhost:7271/items/${todo.id}`, {
-      method: "PUT",
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ ...todo, isComplete: isComplete })
-    });
-    await getTodos();
+    await service.setCompleted(todo.id, isComplete);
+    await getTodos();//refresh tasks list (in order to see the updated one)
   }
 
   async function deleteTodo(id) {
-    await fetch(`https://localhost:7271/items/${id}`, {
-      method: "DELETE"
-    });
-    await getTodos();
+    await service.deleteTask(id);
+    await getTodos();//refresh tasks list
   }
 
   useEffect(() => {
